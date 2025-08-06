@@ -1,0 +1,2844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>钢结构与导流板综合计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        /* 顶部输入区域 */
+        .top-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px 40px 20px 40px;
+        }
+
+        /* 中间可视化区域 */
+        .middle-content {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 40px;
+            padding: 20px 40px;
+        }
+
+        /* 底部结果区域 */
+        .bottom-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 20px 40px 40px 40px;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        /* 框架计算器样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .unit {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-left: 5px;
+        }
+
+        .clear-btn,
+        .calculate-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 导流板计算器样式 */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #34495e;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .reset-btn {
+            margin-top: 6px;
+            padding: 6px 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            font-weight: 500;
+            color: #34495e;
+            cursor: pointer;
+        }
+
+        .welding-input {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #3498db;
+        }
+
+        /* SVG 图形样式 */
+        .svg-diagram-wrapper {
+            position: relative;
+            width: 100%;
+            height: 750px;
+            /* height: 600px; */
+            border-radius: 15px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ff4444;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            width: 95px;
+            min-width: 95px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-field:focus {
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+            transform: scale(1.05);
+        }
+
+        .svg-dimension-line {
+            stroke: #ff4444;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .svg-dimension-arrow {
+            fill: #ff4444;
+        }
+
+        .structure-outline {
+            stroke: #000000;
+            stroke-width: 4;
+            fill: none;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.3));
+        }
+
+        .svg-label-text {
+            fill: #ff4444;
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+
+        .svg-mm-text {
+            fill: #ff4444;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        .hatch-pattern {
+            stroke: #000000;
+            stroke-width: 1;
+            fill: none;
+            opacity: 0.6;
+        }
+
+        /* 可视化图表样式 */
+        .diagram-container {
+            position: relative;
+            width: 100%;
+            /* max-width: 400px; */
+            max-width: 1000px;
+            margin: 20px 0;
+        }
+
+        .diagram-svg {
+            width: 100%;
+            height: 350px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .parameter-label {
+            font-size: 16px;
+            font-weight: 600;
+            fill: #2c3e50;
+        }
+
+        .parameter-value {
+            font-size: 14px;
+            font-weight: 500;
+            fill: #27ae60;
+        }
+
+        .r-value {
+            font-size: 18px;
+            font-weight: 700;
+            fill: #e74c3c;
+        }
+
+        .shape-outline {
+            stroke: #34495e;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .dimension-line {
+            stroke: #7f8c8d;
+            stroke-width: 1;
+            stroke-dasharray: 5, 5;
+        }
+
+        .plate-width-result {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border-left: 5px solid #27ae60;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .plate-width-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .plate-width-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #27ae60;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 结果卡片样式 */
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .result-card {
+            background: #3498db;
+            padding: 16px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .result-card h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-family: 'Consolas', monospace;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        /* 参考图形样式 */
+        .diagrams-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .coordinate-system {
+            position: relative;
+            width: 400px;
+            height: 300px;
+        }
+
+        .axis {
+            position: absolute;
+            background-color: #333;
+        }
+
+        .x-axis {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+
+        .y-axis {
+            width: 2px;
+            height: 50%;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+        .top-extension {
+            position: absolute;
+            width: 32.5%;
+            height: 2px;
+            background-color: #333;
+            left: 17.5%;
+            top: 0;
+        }
+
+        .frame {
+            width: 300px;
+            height: 170px;
+            border-left: 2px solid #333;
+            border-bottom: 2px solid #333;
+            border-right: none;
+            background-color: white;
+            position: relative;
+            margin-left: 100px;
+            margin-top: -80px;
+        }
+
+        .frame::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 200px;
+            height: 2px;
+            background-color: #333;
+        }
+
+        .frame::after {
+            content: '';
+            position: absolute;
+            top: 127px;
+            left: -150px;
+            width: 150px;
+            height: 2px;
+            background-color: #333;
+        }
+
+        /* 尺寸显示框样式 */
+        .dimension-display {
+            position: absolute;
+            top: 135px;
+            left: -145px;
+            font-size: 12px;
+            color: #2c3e50;
+            font-weight: bold;
+            white-space: nowrap;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 2px solid #3498db;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            display: none;
+        }
+
+        .dimension-display.show {
+            display: block;
+        }
+
+        /* 箭头样式 */
+        .dimension-arrow {
+            position: absolute;
+            top: 160px;
+            left: -60px;
+            width: 60px;
+            height: 2px;
+            background: #3498db;
+            transform: rotate(-30deg);
+            transform-origin: left center;
+            display: none;
+            z-index: 9;
+        }
+
+        .dimension-arrow::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: -3px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #3498db;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+        }
+
+        .dimension-arrow.show {
+            display: block;
+        }
+
+        /* 电焊连接标注样式 - 从当前位置往左移动70px */
+        .welding-dimension {
+            position: absolute;
+            top: 200px;
+            left: calc(50% - 65px);
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #d32f2f;
+            font-weight: bold;
+            white-space: nowrap;
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 2px solid #d32f2f;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        /* 45度箭头指向焊接连接处 - 从当前位置往左移动70px */
+        .welding-arrow {
+            position: absolute;
+            top: 180px;
+            left: calc(50% - 65px);
+            width: 35px;
+            height: 2px;
+            background: #d32f2f;
+            transform: rotate(-45deg);
+            transform-origin: left center;
+            display: none;
+            z-index: 9;
+        }
+
+        .welding-arrow::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -3px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #d32f2f;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            transform: rotate(45deg);
+        }
+
+        .welding-arrow.show {
+            display: block;
+        }
+
+        /* 电焊连接横线样式 - 从中心垂直线开始向右延伸，向左延长20px */
+        .welding-line {
+            position: absolute;
+            width: calc(50% + 20px);
+            height: 2px;
+            background-color: #d32f2f;
+            left: calc(50% - 20px);
+            top: calc(50% + 20px);
+            display: none;
+            z-index: 8;
+        }
+
+        .welding-line.show {
+            display: block;
+        }
+
+        /* 电焊连接竖线样式 - 从中心线向下连接到横线，向左移动20px */
+        .welding-vertical-line {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background-color: #d32f2f;
+            left: calc(50% - 21px);
+            top: calc(50%);
+            display: none;
+            z-index: 8;
+        }
+
+        /* 电焊连接竖线样式 - 原先右端的竖线，保持不变 */
+        .welding-vertical-line-right {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background-color: #d32f2f;
+            left: calc(50% + 50% - 1px);
+            top: calc(50%);
+            display: none;
+            z-index: 8;
+        }
+
+        .welding-vertical-line.show {
+            display: block;
+        }
+
+        .welding-vertical-line-right.show {
+            display: block;
+        }
+
+        .welding-dimension.show {
+            display: block;
+        }
+
+        /* 操作按钮样式 */
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            min-width: 180px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* 弹框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* A4纸张样式 */
+        .a4-paper {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            border: 2px solid #333;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .a4-content {
+            /* padding: 20mm; */
+            padding: 5mm;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .a4-header {
+            text-align: center;
+            /* margin-bottom: 30px; */
+            padding-bottom: 10px;
+        }
+
+        .a4-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .a4-subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+
+        .a4-section {
+            margin-bottom: 25px;
+        }
+
+        .a4-section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+
+        .a4-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .a4-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .a4-item-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .a4-item-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+
+        .a4-total {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .a4-total-label {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .a4-total-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 打印样式 */
+        @media print {
+            /* 隐藏页面所有内容 */
+            body > *:not(.modal-overlay) {
+                display: none !important;
+            }
+            
+            /* 显示弹框内容 */
+            .modal-overlay {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+                display: flex !important;
+                z-index: 9999 !important;
+                backdrop-filter: none !important;
+            }
+            
+            .modal-content {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: none !important;
+                max-height: none !important;
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+            }
+            
+            .modal-header {
+                display: none !important;
+            }
+            
+            .modal-body {
+                padding: 0 !important;
+                height: 100% !important;
+            }
+            
+            .a4-paper {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+            
+            .a4-content {
+                padding: 20mm !important;
+                height: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* 确保所有文本和内容可见 */
+            .a4-paper * {
+                visibility: visible !important;
+                color: black !important;
+            }
+            
+            /* 隐藏滚动条 */
+            .modal-content::-webkit-scrollbar {
+                display: none !important;
+            }
+            
+            /* 确保页面没有边距 */
+            @page {
+                margin: 0;
+                size: A4;
+            }
+            
+            /* 强制显示所有内容 */
+            .a4-section,
+            .a4-grid,
+            .a4-item,
+            .a4-total {
+                display: block !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .a4-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+            }
+            
+            /* 调整弹框底部布局的打印样式 */
+            .modal-body .a4-section:last-child .a4-section:last-child {
+                display: grid !important;
+                grid-template-columns: 4fr 1fr !important;
+            }
+        }
+
+        /* 响应式优化 */
+        @media (max-width: 1400px) {
+
+            .top-content,
+            .middle-content,
+            .bottom-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results {
+                grid-template-columns: 1fr;
+            }
+
+            .input-field {
+                width: 110px;
+                min-width: 110px;
+                font-size: 13px;
+                padding: 4px 7px;
+            }
+
+            .a4-paper {
+                width: 100%;
+                height: auto;
+                min-height: 297mm;
+            }
+
+            .a4-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* 移动端调整弹框底部布局 */
+            .modal-body .a4-section:last-child .a4-section:last-child {
+                grid-template-columns: 1fr;
+            }
+
+            .action-btn {
+                min-width: 150px;
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>钢结构与导流板综合计算器</h1>
+            <p>钣金计算与内衬板尺寸计算工具</p>
+        </div>
+
+        <!-- 顶部输入区域 -->
+        <div class="top-content">
+            <!-- 左边：框架计算器交互式参数输入 -->
+            <div class="section">
+                <h2 class="section-title">交互式参数输入</h2>
+
+                <div class="svg-diagram-wrapper">
+                    <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 定义斜向双划线图案 -->
+                        <defs>
+                            <pattern id="hatchPattern" patternUnits="userSpaceOnUse" width="20" height="20">
+                                <line x1="0" y1="0" x2="20" y2="20" class="hatch-pattern" />
+                                <line x1="3" y1="3" x2="23" y2="23" class="hatch-pattern" />
+                            </pattern>
+                        </defs>
+
+                        <g transform="translate(20, 20) scale(0.95)">
+                            <!-- C型材外轮廓 - 添加双划线效果 -->
+                            <path class="structure-outline" d="
+                                            M 520 50 
+                                            L 270 50 
+                                            A 20 20 0 0 0 250 70
+                                            L 250 530 
+                                            A 20 20 0 0 0 270 550 
+                                            L 560 550 
+                                            A 20 20 0 0 0 580 530
+                                            L 580 330
+                                        " />
+                            <path class="structure-outline" d="
+                                            M 516 54 
+                                            L 274 54 
+                                            A 16 16 0 0 0 254 70
+                                            L 254 530 
+                                            A 16 16 0 0 0 274 546 
+                                            L 556 546 
+                                            A 16 16 0 0 0 576 530
+                                            L 576 334
+                                        " />
+
+                            <!-- 填充区域 - 斜向双划线 -->
+                            <!-- 顶部法兰填充 -->
+                            <path d="M 270 50 L 520 50 L 520 70 L 270 70 Z" fill="url(#hatchPattern)" />
+
+                            <!-- 左侧法兰填充 -->
+                            <path d="M 250 70 L 270 70 L 270 530 L 250 530 Z" fill="url(#hatchPattern)" />
+
+                            <!-- 底部法兰填充 -->
+                            <path d="M 270 530 L 560 530 L 560 550 L 270 550 Z" fill="url(#hatchPattern)" />
+
+                            <!-- 右侧小矩形填充 -->
+                            <path d="M 560 330 L 580 330 L 580 530 L 560 530 Z" fill="url(#hatchPattern)" />
+
+                            <!-- 内部轮廓 - 添加双划线效果 -->
+                            <path class="structure-outline" d="
+                                            M 520 70 
+                                            L 270 70 
+                                            L 270 530 
+                                            L 560 530 
+                                            L 560 330
+                                        " />
+                            <path class="structure-outline" d="
+                                            M 516 74 
+                                            L 274 74 
+                                            L 274 526 
+                                            L 556 526 
+                                            L 556 334
+                                        " />
+
+                            <!-- 板材厚度标识双线 -->
+                            <line class="structure-outline" x1="518" y1="50" x2="518" y2="70" />
+                            <line class="structure-outline" x1="514" y1="54" x2="514" y2="74" />
+
+                            <!-- 右侧小矩形内部分隔线填充 -->
+                            <path d="M 560 330 L 580 330 L 580 334 L 560 334 Z" fill="url(#hatchPattern)" />
+                            <path d="M 560 408 L 580 408 L 580 412 L 560 412 Z" fill="url(#hatchPattern)" />
+                            <path d="M 560 448 L 580 448 L 580 452 L 560 452 Z" fill="url(#hatchPattern)" />
+
+                            <!-- 右侧小矩形内部分隔线 - 双划线效果 -->
+                            <line class="structure-outline" x1="560" y1="330" x2="580" y2="330" />
+                            <line class="structure-outline" x1="560" y1="334" x2="580" y2="334" />
+
+                            <line class="structure-outline" x1="560" y1="408" x2="580" y2="408" />
+                            <line class="structure-outline" x1="560" y1="412" x2="580" y2="412" />
+
+                            <line class="structure-outline" x1="560" y1="448" x2="580" y2="448" />
+                            <line class="structure-outline" x1="560" y1="452" x2="580" y2="452" />
+
+                            <!-- 高度 (F) -->
+                            <g>
+                                <line class="svg-dimension-line" x1="220" y1="50" x2="220" y2="550" />
+                                <line class="svg-dimension-line" x1="220" y1="50" x2="250" y2="50" />
+                                <line class="svg-dimension-line" x1="220" y1="550" x2="270" y2="550" />
+                                <text class="svg-label-text" x="160" y="320">高度(F)</text>
+                                <foreignObject x="115" y="330" width="100" height="30">
+                                    <input type="number" id="height" class="input-field" placeholder="0000" min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="160" y="365">mm</text>
+                            </g>
+
+                            <!-- 内压板长度 (C) -->
+                            <g>
+                                <line class="svg-dimension-line" x1="270" y1="20" x2="520" y2="20" />
+                                <line class="svg-dimension-line" x1="270" y1="20" x2="270" y2="50" />
+                                <line class="svg-dimension-line" x1="520" y1="20" x2="520" y2="50" />
+                                <text class="svg-label-text" x="395" y="15">内压板长度 (C)</text>
+                                <foreignObject x="345" y="20" width="100" height="30">
+                                    <input type="number" id="lengthInnerPressure" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="455" y="38">mm</text>
+                            </g>
+
+                            <!-- 板材厚度 (D) -->
+                            <g>
+                                <line class="svg-dimension-line" x1="540" y1="50" x2="540" y2="70" />
+                                <line class="svg-dimension-line" x1="520" y1="50" x2="540" y2="50" />
+                                <line class="svg-dimension-line" x1="520" y1="70" x2="540" y2="70" />
+                                <text class="svg-label-text" x="585" y="50">板材厚度 (D)</text>
+                                <foreignObject x="535" y="55" width="100" height="30">
+                                    <input type="number" id="plateThickness" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="580" y="90">mm</text>
+                            </g>
+
+                            <!-- 特殊长度 (C1) -->
+                            <g>
+                                <line class="svg-dimension-line" x1="270" y1="500" x2="560" y2="500" />
+                                <text class="svg-label-text" x="415" y="460">特殊长度 (C1)</text>
+                                <foreignObject x="365" y="465" width="100" height="30">
+                                    <input type="number" id="specialLength" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="415" y="520">mm</text>
+                            </g>
+
+                            <!-- 法兰内径长度 (A1) -->
+                            <g>
+                                <line class="svg-dimension-line" x1="310" y1="550" x2="310" y2="780" />
+                                <line class="svg-dimension-line" x1="280" y1="550" x2="310" y2="550" />
+                                <line class="svg-dimension-line" x1="280" y1="780" x2="310" y2="780" />
+                                <polygon class="svg-dimension-arrow" points="310,670 305,665 315,665" />
+                                <text class="svg-label-text" x="250" y="580">法兰内径长度(A1)</text>
+                                <foreignObject x="200" y="590" width="100" height="30">
+                                    <input type="number" id="innerDiameterLength" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="250" y="635">mm</text>
+                            </g>
+
+                            <!-- 法兰内径宽 (B1) -->
+                            <g>
+                                <text class="svg-label-text" x="250" y="680">法兰内径宽 (B1)</text>
+                                <foreignObject x="200" y="690" width="100" height="30">
+                                    <input type="number" id="innerDiameter" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="250" y="735">mm</text>
+                            </g>
+
+                            <!-- 法兰外径长 (A2) -->
+                            <g>
+                                <line class="svg-dimension-line" x1="610" y1="330" x2="610" y2="780" />
+                                <line class="svg-dimension-line" x1="580" y1="330" x2="610" y2="330" />
+                                <line class="svg-dimension-line" x1="580" y1="780" x2="610" y2="780" />
+                                <text class="svg-label-text" x="670" y="400">法兰外径长 (A2)</text>
+                                <foreignObject x="620" y="410" width="100" height="30">
+                                    <input type="number" id="outerDiameterFlange" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="670" y="455">mm</text>
+                            </g>
+
+                            <!-- 法兰外径宽度 (B2) -->
+                            <g>
+                                <text class="svg-label-text" x="660" y="590">法兰外径宽度</text>
+                                <text class="svg-label-text" x="660" y="610">(B2)</text>
+                                <foreignObject x="615" y="620" width="100" height="30">
+                                    <input type="number" id="widthOuterDiameter" class="input-field" placeholder="0000"
+                                        min="0" />
+                                </foreignObject>
+                                <text class="svg-mm-text" x="660" y="660">mm</text>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- 特殊长度计算参数 - 两行3列布局，R值放在右下角 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="installHeight">安装高度 (I) <span class="unit">毫米</span></label>
+                        <input type="number" id="installHeight" step="1" min="0" placeholder="安装高度">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="compressionDisplacement">压缩轴向位移量 (X1) <span class="unit">毫米</span></label>
+                        <input type="number" id="compressionDisplacement" step="0.1" min="0" placeholder="压缩位移量">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="tensionDisplacement">拉伸轴向位移量 (X2) <span class="unit">毫米</span></label>
+                        <input type="number" id="tensionDisplacement" step="0.1" min="0" placeholder="拉伸位移量">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="constantX">常量 (X) <span class="unit">毫米</span></label>
+                        <input type="number" id="constantX" step="0.1" min="5" value="5" placeholder="最小值：5">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="constantY">常量 (Y) <span class="unit">毫米</span></label>
+                        <input type="number" id="constantY" step="1" min="0" value="20" placeholder="默认值：20">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label for="rValue">R值 <span class="unit">毫米</span></label>
+                        <input type="number" id="rValue" step="1" min="1" value="100" placeholder="默认：100">
+                    </div>
+                </div>
+
+                <button class="clear-btn" onclick="clearInputs()" style="margin-top: 5px;">清空所有输入</button>
+            </div>
+
+            <!-- 右边：导流板计算器基本参数输入 -->
+            <div class="section">
+                <h2 class="section-title">精确计算内衬板尺寸</h2>
+
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="D_guide">内衬板厚 (D) <span class="unit">mm</span></label>
+                        <input type="number" id="D_guide" step="0.01" placeholder="板厚">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="A1_guide">法兰内径长 (A1) <span class="unit">mm</span></label>
+                        <input type="number" id="A1_guide" step="0.01" placeholder="内径长">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="B1_guide">法兰内径宽 (B1) <span class="unit">mm</span></label>
+                        <input type="number" id="B1_guide" step="0.01" placeholder="内径宽">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="X1_guide">压缩轴向位移量 (X1) <span class="unit">mm</span></label>
+                        <input type="number" id="X1_guide" step="0.1" min="0" placeholder="压缩位移量">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="X2_guide">拉伸轴向位移量 (X2) <span class="unit">mm</span></label>
+                        <input type="number" id="X2_guide" step="0.1" min="0" placeholder="拉伸位移量">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="RD">横向补偿量 (RD) <span class="unit">mm</span></label>
+                        <input type="number" id="RD" step="0.01" placeholder="横向补偿量">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="H_guide">内档高度 (H) <span class="unit">mm</span></label>
+                        <input type="number" id="H_guide" step="0.01" placeholder="内档高度">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="Y_guide">常量 (Y) <span class="unit">mm</span></label>
+                        <input type="number" id="Y_guide" step="1" min="0" value="20" placeholder="常量Y">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="EXD1">补足量1 (EXD1) <span class="unit">mm</span></label>
+                        <input type="number" id="EXD1" step="0.01" placeholder="自动计算">
+                        <button type="button" class="reset-btn" onclick="resetEXD1()">重置</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="EXD2">补足量2 (EXD2) <span class="unit">mm</span></label>
+                        <input type="number" id="EXD2" step="0.01" placeholder="自动计算">
+                        <button type="button" class="reset-btn" onclick="resetEXD2()">重置</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="font-size: 1.1em; color: #34495e; margin-bottom: 16px; font-weight: 600;">电焊连接设置</h3>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableWelding" onchange="toggleWelding()">
+                        <label for="enableWelding">使用电焊连接</label>
+                    </div>
+
+                    <div class="welding-input" id="weldingInput">
+                        <div class="input-group">
+                            <label for="weldingLength">电焊连接长度 <span class="unit">mm</span></label>
+                            <input type="number" id="weldingLength" step="0.01" value="15" placeholder="默认15mm">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="calculateGuide()">计算内衬板尺寸</button>
+
+                <div id="error-message"></div>
+
+                <!-- 蒙皮计算区域 -->
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid #3498db;">
+                    <h3 style="font-size: 1.2rem; font-weight: 600; color: #2c3e50; margin-bottom: 20px; text-align: center;">蒙皮尺寸计算</h3>
+                    
+                    <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; border-left: 5px solid #27ae60;">
+                        <!-- 计算结果显示 -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center; margin-bottom: 20px;">
+                            <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid #3498db; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 6px; font-weight: 500;">蒙皮长度</div>
+                                <div id="skinLength" style="font-size: 1.3rem; font-weight: 700; color: #3498db; font-family: 'Courier New', monospace;">0.00 mm</div>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid #e74c3c; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 6px; font-weight: 500;">蒙皮宽度</div>
+                                <div id="skinWidth" style="font-size: 1.3rem; font-weight: 700; color: #e74c3c; font-family: 'Courier New', monospace;">0.00 mm</div>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid #27ae60; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 6px; font-weight: 500;">蒙皮面积</div>
+                                <div id="skinArea" style="font-size: 1.3rem; font-weight: 700; color: #27ae60; font-family: 'Courier New', monospace;">0.00 m²</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 保温棉体积计算 -->
+                        <div style="background: white; padding: 20px; border-radius: 10px; border: 2px solid #f39c12; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: center;">
+                            <div style="font-size: 1rem; color: #666; margin-bottom: 8px; font-weight: 500;">保温棉体积</div>
+                            <div id="insulationVolume" style="font-size: 1.5rem; font-weight: 700; color: #f39c12; font-family: 'Courier New', monospace;">0.0000 m³</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间可视化区域 -->
+        <div class="middle-content">
+            <!-- 可视化图表 -->
+            <div class="section">
+                <h2 class="section-title">可视化图表</h2>
+                <div class="diagram-container" style="margin: 0 auto;">
+                    <svg class="diagram-svg" viewBox="0 0 900 400">
+                        <defs>
+                            <marker id="arrow-red-left" markerWidth="6" markerHeight="6" refX="5.5" refY="3"
+                                orient="auto" markerUnits="strokeWidth">
+                                <path d="M6,0 L0,3 L6,6 L4.5,3 Z" fill="#ff4444" />
+                            </marker>
+                            <marker id="arrow-red-right" markerWidth="6" markerHeight="6" refX="0.5" refY="3"
+                                orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L6,3 L0,6 L1.5,3 Z" fill="#ff4444" />
+                            </marker>
+                            <pattern id="hatchPattern2" patternUnits="userSpaceOnUse" width="20" height="20">
+                                <line x1="0" y1="0" x2="20" y2="20" stroke="#000" stroke-width="1" opacity="0.3" />
+                                <line x1="3" y1="3" x2="23" y2="23" stroke="#000" stroke-width="1" opacity="0.3" />
+                            </pattern>
+                        </defs>
+                        <g transform="translate(-50,60) scale(0.45)">
+                            <!-- C型材外轮廓 - 双线（底部再加长） -->
+                            <path stroke="#000" stroke-width="8" fill="none"
+                                d="M 520 50 L 270 50 A 20 20 0 0 0 250 70 L 250 580 A 20 20 0 0 0 270 600 L 750 600 A 20 20 0 0 0 770 580 L 770 280" />
+                            <path stroke="#000" stroke-width="4" fill="none"
+                                d="M 516 54 L 274 54 A 16 16 0 0 0 254 70 L 254 580 A 16 16 0 0 0 274 596 L 746 596 A 16 16 0 0 0 766 580 L 766 284" />
+                            <!-- 填充区域 - 斜向双划线（底部再加长） -->
+                            <path d="M 270 50 L 520 50 L 520 70 L 270 70 Z" fill="url(#hatchPattern2)" />
+                            <path d="M 250 70 L 270 70 L 270 580 L 250 580 Z" fill="url(#hatchPattern2)" />
+                            <path d="M 270 580 L 750 580 L 750 600 L 270 600 Z" fill="url(#hatchPattern2)" />
+                            <path d="M 750 280 L 770 280 L 770 580 L 750 580 Z" fill="url(#hatchPattern2)" />
+                            <!-- 内部轮廓 - 双线（底部再加长） -->
+                            <path stroke="#000" stroke-width="4" fill="none"
+                                d="M 520 70 L 270 70 L 270 580 L 750 580 L 750 280" />
+                            <path stroke="#000" stroke-width="2" fill="none"
+                                d="M 516 74 L 274 74 L 274 576 L 746 576 L 746 284" />
+                            <!-- 板材厚度标识双线 -->
+                            <line stroke="#000" stroke-width="4" x1="518" y1="50" x2="518" y2="70" />
+                            <line stroke="#000" stroke-width="2" x1="522" y1="54" x2="522" y2="66" />
+                            <!-- 分隔线 -->
+                            <line stroke="#000" stroke-width="2" x1="520" y1="70" x2="270" y2="70" />
+                            <line stroke="#000" stroke-width="2" x1="270" y1="580" x2="750" y2="580" />
+                            <line stroke="#000" stroke-width="2" x1="770" y1="280" x2="750" y2="280" />
+                            <line stroke="#000" stroke-width="2" x1="770" y1="280" x2="750" y2="280" />
+                        </g>
+                        <!-- 尺寸标注：C、F、C1、FLK（红色，位置略作适配） -->
+                        <line x1="80" y1="60" x2="175" y2="60" stroke="#ff4444" stroke-width="2"
+                            marker-start="url(#arrow-red-left)" marker-end="url(#arrow-red-right)" />
+                        <line x1="70" y1="50" x2="70" y2="80" stroke="#ff4444" stroke-width="2" />
+                        <line x1="185" y1="50" x2="185" y2="80" stroke="#ff4444" stroke-width="2" />
+                        <text x="130" y="52" fill="#ff4444" font-size="18" text-anchor="middle" id="dim-c">C</text>
+                        <!-- C值显示框 -->
+                        <foreignObject x="145" y="35" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="c-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="255" y="50" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <line x1="55" y1="80" x2="55" y2="335" stroke="#ff4444" stroke-width="2" />
+                        <line x1="45" y1="80" x2="70" y2="80" stroke="#ff4444" stroke-width="2" />
+                        <line x1="45" y1="335" x2="70" y2="335" stroke="#ff4444" stroke-width="2" />
+                        <text x="45" y="220" fill="#ff4444" font-size="18" text-anchor="middle" id="dim-f">F</text>
+                        <!-- F值显示框 -->
+                        <foreignObject x="0" y="225" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="f-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="110" y="240" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <line x1="70" y1="340" x2="290" y2="340" stroke="#ff4444" stroke-width="2" />
+                        <line x1="70" y1="330" x2="70" y2="350" stroke="#ff4444" stroke-width="2" />
+                        <line x1="290" y1="330" x2="290" y2="350" stroke="#ff4444" stroke-width="2" />
+                        <text x="180" y="360" fill="#ff4444" font-size="18" text-anchor="middle" id="dim-c1">C1</text>
+                        <!-- C1值显示框 -->
+                        <foreignObject x="130" y="365" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="c1-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="245" y="380" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <line x1="300" y1="185" x2="320" y2="185" stroke="#ff4444" stroke-width="2" />
+                        <line x1="310" y1="185" x2="310" y2="330" stroke="#ff4444" stroke-width="2" />
+                        <line x1="300" y1="330" x2="320" y2="330" stroke="#ff4444" stroke-width="2" />
+                        <text x="315" y="260" fill="#ff4444" font-size="18" text-anchor="start" id="dim-flk">FLK</text>
+                        <!-- FLK值显示框 -->
+                        <foreignObject x="285" y="265" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="flk-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="395" y="280" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <!-- 右侧两个矩形及尺寸标注往回调整 -->
+                        <rect x="450" y="80" width="300" height="80" fill="none" stroke="#000" stroke-width="3" />
+                        <rect x="450" y="220" width="250" height="80" fill="none" stroke="#000" stroke-width="3" />
+                        <line x1="450" y1="70" x2="750" y2="70" stroke="#ff4444" stroke-width="2" />
+                        <line x1="450" y1="60" x2="450" y2="80" stroke="#ff4444" stroke-width="2" />
+                        <line x1="750" y1="60" x2="750" y2="80" stroke="#ff4444" stroke-width="2" />
+                        <text x="600" y="60" fill="#ff4444" font-size="18" text-anchor="middle" id="dim-l1">L1</text>
+                        <!-- L1值显示框 -->
+                        <foreignObject x="620" y="42" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="l1-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="730" y="57" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <line x1="760" y1="80" x2="760" y2="160" stroke="#ff4444" stroke-width="2" />
+                        <line x1="750" y1="80" x2="770" y2="80" stroke="#ff4444" stroke-width="2" />
+                        <line x1="750" y1="160" x2="770" y2="160" stroke="#ff4444" stroke-width="2" />
+                        <text x="765" y="130" fill="#ff4444" font-size="18" text-anchor="start" id="dim-bck1">BCK</text>
+                        <!-- BCK1值显示框 -->
+                        <foreignObject x="810" y="112" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="bck1-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="920" y="127" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <line x1="450" y1="310" x2="700" y2="310" stroke="#ff4444" stroke-width="2" />
+                        <line x1="450" y1="300" x2="450" y2="320" stroke="#ff4444" stroke-width="2" />
+                        <line x1="700" y1="300" x2="700" y2="320" stroke="#ff4444" stroke-width="2" />
+                        <text x="575" y="330" fill="#ff4444" font-size="18" text-anchor="middle" id="dim-l2">L2</text>
+                        <!-- L2值显示框 -->
+                        <foreignObject x="525" y="335" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="l2-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="575" y="370" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <line x1="710" y1="220" x2="710" y2="300" stroke="#ff4444" stroke-width="2" />
+                        <line x1="700" y1="220" x2="720" y2="220" stroke="#ff4444" stroke-width="2" />
+                        <line x1="700" y1="300" x2="720" y2="300" stroke="#ff4444" stroke-width="2" />
+                        <text x="715" y="265" fill="#ff4444" font-size="18" text-anchor="start" id="dim-bck2">BCK</text>
+                        <!-- BCK2值显示框 -->
+                        <foreignObject x="760" y="247" width="100" height="25">
+                            <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                id="bck2-value-display">0.00</div>
+                        </foreignObject>
+                        <text x="870" y="262" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                        <!-- R值标注 - 右上角 -->
+                        <text x="880" y="30" fill="#ff4444" font-size="18" text-anchor="middle"
+                            font-weight="bold">R值</text>
+                        <text x="880" y="50" fill="#ff4444" font-size="18" text-anchor="middle" font-weight="bold"
+                            id="r-value-display">100.00mm</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 板材宽度结果 -->
+            <div class="section">
+                <!-- <div class="plate-width-result" style="margin: 0;">
+                    <div class="plate-width-label">板材宽度</div>
+                    <div class="plate-width-value" id="plate-width-display">0.00 毫米</div>
+                </div> -->
+
+                <!-- 框架重量计算区域 -->
+                <!-- <div style="margin-top: 30px;"> -->
+                <div>
+                    <h2 class="section-title">框架重量计算</h2>
+                    <!-- <h3
+                        style="font-size: 1.3rem; font-weight: 600; color: #2c3e50; margin-bottom: 20px; text-align: center;">
+                        框架重量计算
+                    </h3> -->
+
+                    <!-- 材料选择 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label
+                                style="display: block; font-weight: 500; margin-bottom: 8px; color: #555;">进口侧框架材料</label>
+                            <select id="inletMaterial"
+                                style="width: 100%; padding: 10px; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 1rem;">
+                                <option value="7.85">碳钢 (7.85)</option>
+                                <option value="7.93">不锈钢3系 (7.93)</option>
+                                <option value="7.98">不锈钢400系列 (7.98)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-weight: 500; margin-bottom: 8px; color: #555;">出口侧框架材料</label>
+                            <select id="outletMaterial"
+                                style="width: 100%; padding: 10px; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 1rem;">
+                                <option value="7.85">碳钢 (7.85)</option>
+                                <option value="7.93">不锈钢3系 (7.93)</option>
+                                <option value="7.98">不锈钢400系列 (7.98)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 重量计算结果 -->
+                    <div id="weightResults"
+                        style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; border-left: 5px solid #3498db;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">进口侧框架重量</div>
+                                <div id="inletWeight" style="font-size: 1.4rem; font-weight: 700; color: #3498db;">0.00
+                                    kg</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">出口侧框架重量</div>
+                                <div id="outletWeight" style="font-size: 1.4rem; font-weight: 700; color: #3498db;">0.00
+                                    kg</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; border-top: 2px solid #ddd; padding-top: 15px;">
+                            <div style="font-size: 1rem; color: #666; margin-bottom: 5px;">总重量</div>
+                            <div id="totalWeight" style="font-size: 1.8rem; font-weight: 700; color: #27ae60;">0.00 kg
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部结果区域 -->
+        <div class="bottom-content">
+            <!-- 计算结果 -->
+            <div class="section" id="resultsSection" style="display: none;">
+                <h2 class="section-title">计算结果</h2>
+                <div id="results" class="results"></div>
+
+                <!-- 内衬板重量计算 -->
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 1.2rem; font-weight: 600; color: #2c3e50; margin-bottom: 15px;">内衬板重量计算</h3>
+
+                    <!-- 材料选择 -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #555;">内衬板材料</label>
+                        <select id="liningMaterial"
+                            style="width: 100%; padding: 10px; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 1rem;">
+                            <option value="7.85">碳钢 (7.85)</option>
+                            <option value="7.93">不锈钢3系 (7.93)</option>
+                            <option value="7.98">不锈钢400系列 (7.98)</option>
+                        </select>
+                    </div>
+
+                    <!-- 重量结果显示 -->
+                    <div
+                        style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; border-left: 5px solid #27ae60;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 3px;">内衬板A重量 (2块)</div>
+                                <div id="liningAWeight" style="font-size: 1.1rem; font-weight: 600; color: #3498db;">
+                                    0.00 kg</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 3px;">内衬板B重量 (2块)</div>
+                                <div id="liningBWeight" style="font-size: 1.1rem; font-weight: 600; color: #3498db;">
+                                    0.00 kg</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 3px;">内衬板C重量 (2块)</div>
+                                <div id="liningCWeight" style="font-size: 1.1rem; font-weight: 600; color: #3498db;">
+                                    0.00 kg</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 3px;">内衬板D重量 (2块)</div>
+                                <div id="liningDWeight" style="font-size: 1.1rem; font-weight: 600; color: #3498db;">
+                                    0.00 kg</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; border-top: 2px solid #ddd; padding-top: 15px;">
+                            <div style="font-size: 1rem; color: #666; margin-bottom: 5px;">内衬板总重量</div>
+                            <div id="liningTotalWeight" style="font-size: 1.6rem; font-weight: 700; color: #27ae60;">
+                                0.00 kg</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 参考图形 -->
+            <div class="section" id="diagramSection" style="display: none;">
+                <h2 class="section-title">参考图形</h2>
+                <div class="diagrams-container">
+                    <!-- 上部分 - 坐标系统 -->
+                    <div class="coordinate-system">
+                        <div class="axis x-axis"></div>
+                        <div class="axis y-axis"></div>
+                        <div class="top-extension"></div>
+                        <div class="welding-line" id="weldingLine"></div>
+                        <div class="welding-vertical-line" id="weldingVerticalLine"></div>
+                        <div class="welding-vertical-line-right" id="weldingVerticalLineRight"></div>
+                        <div class="welding-arrow" id="weldingArrow"></div>
+                        <div class="welding-dimension" id="weldingDimension">
+                            电焊连接: <span id="weldingValue">15</span>mm
+                        </div>
+                    </div>
+
+                    <!-- 下部分 - 矩形框架 -->
+                    <div class="frame">
+                        <div class="dimension-display" id="dimensionDisplay">
+                            <span id="dimensionValue">0</span>mm
+                        </div>
+                        <div class="dimension-arrow" id="dimensionArrow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部操作按钮区域 -->
+        <div style="padding: 20px 40px 40px 40px; text-align: center;">
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button id="showA4Modal" class="action-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="9"></line>
+                        <line x1="9" y1="13" x2="15" y2="13"></line>
+                        <line x1="9" y1="17" x2="15" y2="17"></line>
+                    </svg>
+                    查看A4比例
+                </button>
+                <button id="printModal" class="action-btn" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <polyline points="6,9 6,2 18,2 18,9"></polyline>
+                        <path d="M6,18H4a2,2 0 0,1 -2,-2V11a2,2 0 0,1 2,-2H20a2,2 0 0,1 2,2v5a2,2 0 0,1 -2,2H18"></path>
+                        <polyline points="6,14 6,18 18,18 18,14"></polyline>
+                        <circle cx="12" cy="14" r="2"></circle>
+                    </svg>
+                    生成PDF
+                </button>
+                <button id="directPrint" class="action-btn" style="background: linear-gradient(135deg, #e67e22, #d35400);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <polyline points="6,9 6,2 18,2 18,9"></polyline>
+                        <path d="M6,18H4a2,2 0 0,1 -2,-2V11a2,2 0 0,1 2,-2H20a2,2 0 0,1 2,2v5a2,2 0 0,1 -2,2H18"></path>
+                        <polyline points="6,14 6,18 18,18 18,14"></polyline>
+                        <circle cx="12" cy="14" r="2"></circle>
+                    </svg>
+                    直接打印
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- A4弹框 -->
+    <div id="a4Modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">钢结构与导流板计算报告</h2>
+                <button class="modal-close" onclick="closeA4Modal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="a4-paper">
+                    <div class="a4-content">
+                        <!-- 顶部输入框区域 -->
+                        <div class="a4-header">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px;">
+                                <input type="text" placeholder="项目名称" style="
+                                    padding: 10px 15px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 6px;
+                                    background: #f8f9fa;
+                                    font-size: 14px;
+                                    width: 150px;
+                                    text-align: center;
+                                ">
+                                <span style="color: #2c3e50; font-size: 16px; font-weight: 500;">低温中日联</span>
+                                <input type="text" placeholder="输入型号" style="
+                                    padding: 10px 15px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 6px;
+                                    background: #f8f9fa;
+                                    font-size: 14px;
+                                    width: 150px;
+                                    text-align: center;
+                                ">
+                            </div>
+
+                        </div>
+
+                        <!-- 可视化图表部分 -->
+                        <div class="a4-section">
+                            <h3 class="a4-section-title">可视化图表</h3>
+                            <div style="margin: 0 auto; max-width: 100%;">
+                                <svg viewBox="0 0 900 400" style="width: 100%; height: 300px;">
+                                    <defs>
+                                        <marker id="arrow-red-left" markerWidth="6" markerHeight="6" refX="5.5" refY="3"
+                                            orient="auto" markerUnits="strokeWidth">
+                                            <path d="M6,0 L0,3 L6,6 L4.5,3 Z" fill="#ff4444" />
+                                        </marker>
+                                        <marker id="arrow-red-right" markerWidth="6" markerHeight="6" refX="0.5" refY="3"
+                                            orient="auto" markerUnits="strokeWidth">
+                                            <path d="M0,0 L6,3 L0,6 L1.5,3 Z" fill="#ff4444" />
+                                        </marker>
+                                        <pattern id="hatchPattern2" patternUnits="userSpaceOnUse" width="20" height="20">
+                                            <line x1="0" y1="0" x2="20" y2="20" stroke="#000" stroke-width="1" opacity="0.3" />
+                                            <line x1="3" y1="3" x2="23" y2="23" stroke="#000" stroke-width="1" opacity="0.3" />
+                                        </pattern>
+                                    </defs>
+                                    <g transform="translate(-50,60) scale(0.45)">
+                                        <!-- C型材外轮廓 - 双线（底部再加长） -->
+                                        <path stroke="#000" stroke-width="8" fill="none"
+                                            d="M 520 50 L 270 50 A 20 20 0 0 0 250 70 L 250 580 A 20 20 0 0 0 270 600 L 750 600 A 20 20 0 0 0 770 580 L 770 280" />
+                                        <path stroke="#000" stroke-width="4" fill="none"
+                                            d="M 516 54 L 274 54 A 16 16 0 0 0 254 70 L 254 580 A 16 16 0 0 0 274 596 L 746 596 A 16 16 0 0 0 766 580 L 766 284" />
+                                        <!-- 填充区域 - 斜向双划线（底部再加长） -->
+                                        <path d="M 270 50 L 520 50 L 520 70 L 270 70 Z" fill="url(#hatchPattern2)" />
+                                        <path d="M 250 70 L 270 70 L 270 580 L 250 580 Z" fill="url(#hatchPattern2)" />
+                                        <path d="M 270 580 L 750 580 L 750 600 L 270 600 Z" fill="url(#hatchPattern2)" />
+                                        <path d="M 750 280 L 770 280 L 770 580 L 750 580 Z" fill="url(#hatchPattern2)" />
+                                        <!-- 内部轮廓 - 双线（底部再加长） -->
+                                        <path stroke="#000" stroke-width="4" fill="none"
+                                            d="M 520 70 L 270 70 L 270 580 L 750 580 L 750 280" />
+                                        <path stroke="#000" stroke-width="2" fill="none"
+                                            d="M 516 74 L 274 74 L 274 576 L 746 576 L 746 284" />
+                                        <!-- 板材厚度标识双线 -->
+                                        <line stroke="#000" stroke-width="4" x1="518" y1="50" x2="518" y2="70" />
+                                        <line stroke="#000" stroke-width="2" x1="522" y1="54" x2="522" y2="66" />
+                                        <!-- 分隔线 -->
+                                        <line stroke="#000" stroke-width="2" x1="520" y1="70" x2="270" y2="70" />
+                                        <line stroke="#000" stroke-width="2" x1="270" y1="580" x2="750" y2="580" />
+                                        <line stroke="#000" stroke-width="2" x1="770" y1="280" x2="750" y2="280" />
+                                        <line stroke="#000" stroke-width="2" x1="770" y1="280" x2="750" y2="280" />
+                                    </g>
+                                    <!-- 尺寸标注：C、F、C1、FLK（红色，位置略作适配） -->
+                                    <line x1="80" y1="60" x2="175" y2="60" stroke="#ff4444" stroke-width="2"
+                                        marker-start="url(#arrow-red-left)" marker-end="url(#arrow-red-right)" />
+                                    <line x1="70" y1="50" x2="70" y2="80" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="185" y1="50" x2="185" y2="80" stroke="#ff4444" stroke-width="2" />
+                                    <text x="130" y="52" fill="#ff4444" font-size="18" text-anchor="middle">C</text>
+                                    <!-- C值显示框 -->
+                                    <foreignObject x="145" y="35" width="100" height="25">
+                                        <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                            id="a4-c-value-display">0.00</div>
+                                    </foreignObject>
+                                    <text x="255" y="50" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <line x1="55" y1="80" x2="55" y2="335" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="45" y1="80" x2="70" y2="80" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="45" y1="335" x2="70" y2="335" stroke="#ff4444" stroke-width="2" />
+                                    <text x="45" y="220" fill="#ff4444" font-size="18" text-anchor="middle">F</text>
+                                    <!-- F值显示框 -->
+                                    <foreignObject x="0" y="225" width="100" height="25">
+                                        <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                            id="a4-f-value-display">0.00</div>
+                                    </foreignObject>
+                                    <text x="110" y="240" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <line x1="70" y1="340" x2="290" y2="340" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="70" y1="330" x2="70" y2="350" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="290" y1="330" x2="290" y2="350" stroke="#ff4444" stroke-width="2" />
+                                    <text x="180" y="360" fill="#ff4444" font-size="18" text-anchor="middle">C1</text>
+                                    <!-- C1值显示框 -->
+                                    <foreignObject x="130" y="365" width="100" height="25">
+                                        <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                            id="a4-c1-value-display">0.00</div>
+                                    </foreignObject>
+                                    <text x="245" y="380" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <line x1="300" y1="185" x2="320" y2="185" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="310" y1="185" x2="310" y2="330" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="300" y1="330" x2="320" y2="330" stroke="#ff4444" stroke-width="2" />
+                                    <text x="315" y="260" fill="#ff4444" font-size="18" text-anchor="start">FLK</text>
+                                    <!-- FLK值显示框 -->
+                                    <foreignObject x="285" y="265" width="100" height="25">
+                                        <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                            id="a4-flk-value-display">0.00</div>
+                                    </foreignObject>
+                                    <text x="395" y="280" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <!-- 右侧两个矩形及尺寸标注 -->
+                                    <rect x="450" y="80" width="300" height="80" fill="none" stroke="#000" stroke-width="3" />
+                                    <rect x="450" y="220" width="250" height="80" fill="none" stroke="#000" stroke-width="3" />
+                                    <line x1="450" y1="70" x2="750" y2="70" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="450" y1="60" x2="450" y2="80" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="750" y1="60" x2="750" y2="80" stroke="#ff4444" stroke-width="2" />
+                                    <text x="600" y="60" fill="#ff4444" font-size="18" text-anchor="middle">L1</text>
+                                    <!-- L1值显示框 -->
+                                    <foreignObject x="620" y="42" width="100" height="25">
+                                        <div style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ff4444; border-radius: 4px; padding: 0px; font-size: 12px; font-weight: bold; color: #333; text-align: center; font-family: 'Courier New', monospace;"
+                                            id="a4-l1-value-display">0.00</div>
+                                    </foreignObject>
+                                    <text x="730" y="57" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <line x1="760" y1="80" x2="760" y2="160" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="750" y1="80" x2="770" y2="80" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="750" y1="160" x2="770" y2="160" stroke="#ff4444" stroke-width="2" />
+                                    <text x="765" y="130" fill="#ff4444" font-size="18" text-anchor="start">BCK</text>
+                                    <text x="920" y="127" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <line x1="450" y1="310" x2="700" y2="310" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="450" y1="300" x2="450" y2="320" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="700" y1="300" x2="700" y2="320" stroke="#ff4444" stroke-width="2" />
+                                    <text x="575" y="330" fill="#ff4444" font-size="18" text-anchor="middle">L2</text>
+                                    <text x="575" y="370" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <line x1="710" y1="220" x2="710" y2="300" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="700" y1="220" x2="720" y2="220" stroke="#ff4444" stroke-width="2" />
+                                    <line x1="700" y1="300" x2="720" y2="300" stroke="#ff4444" stroke-width="2" />
+                                    <text x="715" y="265" fill="#ff4444" font-size="18" text-anchor="start">BCK</text>
+                                    <text x="870" y="262" fill="#ff4444" font-size="10" text-anchor="middle">mm</text>
+
+                                    <!-- R值标注 - 右上角 -->
+                                    <text x="880" y="30" fill="#ff4444" font-size="18" text-anchor="middle"
+                                        font-weight="bold">R值</text>
+                                    <text x="880" y="50" fill="#ff4444" font-size="18" text-anchor="middle" font-weight="bold">100.00mm</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 底部分左右两侧 -->
+                        <div style="display: grid; grid-template-columns: 4fr 1fr; gap: 20px; margin-top: 20px;">
+                            <!-- 左侧：内衬板尺寸 -->
+                            <div class="a4-section">
+                                <h3 class="a4-section-title">内衬板尺寸</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div style="background: #3498db; padding: 15px; border-radius: 8px; color: white; text-align: center;">
+                                        <div style="font-weight: bold; margin-bottom: 8px;">内衬板A</div>
+                                        <div style="background: rgba(255, 255, 255, 0.2); padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace;">213 × 378 × 213</div>
+                                    </div>
+                                    <div style="background: #3498db; padding: 15px; border-radius: 8px; color: white; text-align: center;">
+                                        <div style="font-weight: bold; margin-bottom: 8px;">内衬板B</div>
+                                        <div style="background: rgba(255, 255, 255, 0.2); padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace;">213 × 378 × -213</div>
+                                    </div>
+                                    <div style="background: #3498db; padding: 15px; border-radius: 8px; color: white; text-align: center;">
+                                        <div style="font-weight: bold; margin-bottom: 8px;">内衬板C</div>
+                                        <div style="background: rgba(255, 255, 255, 0.2); padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace;">213 × 363 × 273</div>
+                                    </div>
+                                    <div style="background: #3498db; padding: 15px; border-radius: 8px; color: white; text-align: center;">
+                                        <div style="font-weight: bold; margin-bottom: 8px;">内衬板D</div>
+                                        <div style="background: rgba(255, 255, 255, 0.2); padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace;">213 × 363 × 699</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：参考图形 -->
+                            <div class="a4-section">
+                                <h3 class="a4-section-title">参考图形</h3>
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
+                                    <!-- 上部分 - 坐标系统 -->
+                                    <div style="position: relative; width: 100%; height: 200px; margin-bottom: 20px;">
+                                        <div style="position: absolute; width: 100%; height: 2px; background-color: #333; top: 50%; left: 0; transform: translateY(-50%);"></div>
+                                        <div style="position: absolute; width: 2px; height: 50%; background-color: #333; left: 50%; top: 0; transform: translateX(-50%);"></div>
+                                        <div style="position: absolute; width: 32.5%; height: 2px; background-color: #333; left: 17.5%; top: 0;"></div>
+                                        
+                                        <!-- 电焊连接标注 -->
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50%; height: 2px; background-color: #d32f2f; display: block;"></div>
+                                        <div style="position: absolute; width: 2px; height: 20px; background-color: #d32f2f; left: calc(50% - 21px); top: calc(50%);"></div>
+                                        <div style="position: absolute; width: 2px; height: 20px; background-color: #d32f2f; left: calc(50% + 50% - 1px); top: calc(50%);"></div>
+                                        
+                                        <!-- 电焊连接标注文字 -->
+                                        <div style="position: absolute; top: 200px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #d32f2f; font-weight: bold; background: rgba(255, 255, 255, 0.95); padding: 4px 8px; border-radius: 4px; border: 2px solid #d32f2f;">
+                                            电焊连接: 15mm
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 下部分 - 矩形框架 -->
+                                    <div style="width: 300px; height: 170px; border-left: 2px solid #333; border-bottom: 2px solid #333; background-color: white; position: relative; margin-left: 100px; margin-top: -80px;">
+                                        <div style="position: absolute; top: -2px; left: 0; width: 200px; height: 2px; background-color: #333;"></div>
+                                        <div style="position: absolute; top: 127px; left: -150px; width: 150px; height: 2px; background-color: #333;"></div>
+                                        
+                                        <!-- 尺寸显示框 -->
+                                        <div style="position: absolute; top: 135px; left: -145px; font-size: 12px; color: #2c3e50; font-weight: bold; background: rgba(255, 255, 255, 0.95); padding: 6px 10px; border-radius: 6px; border: 2px solid #3498db;">
+                                            30.00mm
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入html2pdf.js库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        // 框架计算器相关变量
+        let isManualXChange = false;
+
+        // 导流板计算器相关变量
+        let isEXD1AutoCalculated = true;
+        let isEXD2AutoCalculated = true;
+        let isManualGuideHChange = false;
+        let isManualGuideYChange = false;
+        let isManualGuideX1Change = false;
+        let isManualGuideX2Change = false;
+        let isManualGuideA1Change = false;
+        let isManualGuideB1Change = false;
+
+        // 获取框架计算器的所有输入元素
+        const frameInputs = {
+            plateThickness: document.getElementById('plateThickness'),
+            height: document.getElementById('height'),
+            outerDiameterFlange: document.getElementById('outerDiameterFlange'),
+            widthOuterDiameter: document.getElementById('widthOuterDiameter'),
+            innerDiameterLength: document.getElementById('innerDiameterLength'),
+            innerDiameter: document.getElementById('innerDiameter'),
+            lengthInnerPressure: document.getElementById('lengthInnerPressure'),
+            specialLength: document.getElementById('specialLength'),
+            rValue: document.getElementById('rValue'),
+            installHeight: document.getElementById('installHeight'),
+            compressionDisplacement: document.getElementById('compressionDisplacement'),
+            tensionDisplacement: document.getElementById('tensionDisplacement'),
+            constantX: document.getElementById('constantX'),
+            constantY: document.getElementById('constantY')
+        };
+
+        // 获取导流板计算器的所有输入元素
+        const guideInputs = {
+            D: document.getElementById('D_guide'),
+            A1: document.getElementById('A1_guide'),
+            B1: document.getElementById('B1_guide'),
+            X1: document.getElementById('X1_guide'),
+            X2: document.getElementById('X2_guide'),
+            RD: document.getElementById('RD'),
+            H: document.getElementById('H_guide'),
+            Y: document.getElementById('Y_guide'),
+            EXD1: document.getElementById('EXD1'),
+            EXD2: document.getElementById('EXD2'),
+            enableWelding: document.getElementById('enableWelding'),
+            weldingLength: document.getElementById('weldingLength')
+        };
+
+        // 获取图表显示元素
+        const diagramDisplays = {
+            flange1: document.getElementById('flange1-display'),
+            flange2: document.getElementById('flange2-display'),
+            r: document.getElementById('r-display'),
+            l1: document.getElementById('l1-display'),
+            l2: document.getElementById('l2-display'),
+            plateWidth: document.getElementById('plate-width-display')
+        };
+
+        // 框架计算器函数
+        function calculateConstantX() {
+            const X1 = parseFloat(frameInputs.compressionDisplacement.value) || 0;
+
+            if (X1 > 0) {
+                let X = 5;
+                while ((X1 + X) % 5 !== 0) {
+                    X++;
+                }
+                frameInputs.constantX.value = X.toFixed(1);
+            }
+        }
+
+        function calculateC1() {
+            const I = parseFloat(frameInputs.installHeight.value) || 0;
+            const X1 = parseFloat(frameInputs.compressionDisplacement.value) || 0;
+            const X2 = parseFloat(frameInputs.tensionDisplacement.value) || 0;
+            const X = parseFloat(frameInputs.constantX.value) || 5;
+            const Y = parseFloat(frameInputs.constantY.value) || 20;
+
+            // 同步左边的压缩轴向位移量X1到右边，并触发EXD1自动计算
+            if (!isManualGuideX1Change && guideInputs.X1) {
+                guideInputs.X1.value = X1.toFixed(1);
+
+                // 触发EXD1自动计算
+                if (!guideInputs.EXD1.value || isEXD1AutoCalculated) {
+                    const calculatedEXD1 = calculateEXD(X1);
+                    guideInputs.EXD1.value = calculatedEXD1;
+                    isEXD1AutoCalculated = true;
+                }
+            }
+
+            // 同步左边的拉伸轴向位移量X2到右边
+            if (!isManualGuideX2Change && guideInputs.X2) {
+                guideInputs.X2.value = X2.toFixed(1);
+            }
+
+            // 同步左边的常量Y到右边
+            if (!isManualGuideYChange && guideInputs.Y) {
+                guideInputs.Y.value = Y.toFixed(0);
+            }
+
+            if (frameInputs.installHeight.value || frameInputs.compressionDisplacement.value || frameInputs.tensionDisplacement.value) {
+                // 新的C1计算公式：C1 = (I - (X1 + X) × 2 - X2 - Y) ÷ 2
+                let C1 = (I - (X1 + X) * 2 - X2 - Y) / 2;
+
+                if (C1 > 0 && C1 % 5 !== 0) {
+                    C1 = Math.ceil(C1 / 5) * 5;
+                }
+
+                frameInputs.specialLength.value = C1 >= 0 ? C1.toFixed(2) : '0.00';
+
+                // 新的内档高度计算公式：H = (X1 + X) × 2 + (X2 + Y)
+                const H = (X1 + X) * 2 + (X2 + Y);
+
+                // 如果右边的内档高度(H)没有被手动修改，则自动填入计算结果
+                if (!isManualGuideHChange && guideInputs.H) {
+                    guideInputs.H.value = H >= 0 ? H.toFixed(2) : '0.00';
+                }
+            }
+
+            calculateFrame();
+        }
+
+        function calculateFrame() {
+            const D = parseFloat(frameInputs.plateThickness.value) || 0;
+            const F = parseFloat(frameInputs.height.value) || 0;
+            const A2 = parseFloat(frameInputs.outerDiameterFlange.value) || 0;
+            const B2 = parseFloat(frameInputs.widthOuterDiameter.value) || 0;
+            const A1 = parseFloat(frameInputs.innerDiameterLength.value) || 0;
+            const B1 = parseFloat(frameInputs.innerDiameter.value) || 0;
+            const C = parseFloat(frameInputs.lengthInnerPressure.value) || 0;
+            const C1 = parseFloat(frameInputs.specialLength.value) || 0;
+            const R = parseFloat(frameInputs.rValue.value) || 0;
+
+            const flangeWidth1 = (A2 - A1 + 20) / 2;
+            const flangeWidth2 = (B2 - B1 + 20) / 2;
+            const l1 = A1 + (F - 100) * 2;
+            const l2 = B1 + (3.14 * R) + (F - 100) * 2;
+            const plateWidth = C + F + C1 + flangeWidth1 - ((D - 1) * 2 * 3);
+
+            // 安全地更新显示元素，添加空值检查
+            if (diagramDisplays.flange1) diagramDisplays.flange1.textContent = flangeWidth1.toFixed(2) + ' mm';
+            if (diagramDisplays.flange2) diagramDisplays.flange2.textContent = flangeWidth2.toFixed(2) + ' mm';
+            if (diagramDisplays.r) diagramDisplays.r.textContent = R.toFixed(0) + ' mm';
+            if (diagramDisplays.l1) diagramDisplays.l1.textContent = l1.toFixed(2) + ' mm';
+            if (diagramDisplays.l2) diagramDisplays.l2.textContent = l2.toFixed(2) + ' mm';
+            if (diagramDisplays.plateWidth) diagramDisplays.plateWidth.textContent = plateWidth.toFixed(2) + ' 毫米';
+
+            // 同步左边的A1到右边的法兰内径长
+            if (!isManualGuideA1Change && guideInputs.A1 && A1 > 0) {
+                guideInputs.A1.value = A1.toFixed(2);
+            }
+
+            // 同步左边的B1到右边的法兰内径宽
+            if (!isManualGuideB1Change && guideInputs.B1 && B1 > 0) {
+                guideInputs.B1.value = B1.toFixed(2);
+            }
+
+            // 蒙皮计算
+            // 从右边内衬板计算器获取参数
+            const H = parseFloat(guideInputs.H.value) || 0;
+            const X2 = parseFloat(guideInputs.X2.value) || 0;
+            const RD = parseFloat(guideInputs.RD.value) || 0;
+            
+            // 计算蒙皮长度（新公式）
+            // 蒙皮长=（A1+（F-R）×2 +B1＋3.14×R+(F-R)×2）×2+余量
+            const skinLengthBase = (A1 + (F - R) * 2 + B1 + 3.14 * R + (F - R) * 2) * 2;
+            
+            // 确定余量
+            let margin = 0;
+            const skinLengthMeters = skinLengthBase / 1000; // 转换为米判断
+            
+            if (skinLengthMeters < 3) {
+                margin = 80; // 小于3m时余量为80mm
+            } else if (skinLengthMeters >= 3 && skinLengthMeters < 8) {
+                margin = 100; // 3m到8m时余量为100mm
+            } else {
+                margin = 120; // 大于等于8m时余量为120mm
+            }
+            
+            const skinLength = skinLengthBase + margin;
+            
+            // 计算蒙皮宽度（新公式）
+            let skinWidth = 0;
+            if (RD >= 50) {
+                // 当RD≥50时，公式变为（根号（H的二次方+RD的二次方））+C×2+10＋X2+30
+                const sqrtPart = Math.sqrt(H * H + RD * RD);
+                skinWidth = sqrtPart + C * 2 + 10 + X2 + 30;
+            } else {
+                // 默认公式：H+C×2+10+X2＋30
+                skinWidth = H + C * 2 + 10 + X2 + 30;
+            }
+            
+            // 蒙皮面积=长×宽 (转换为平方米)
+            const skinArea = (skinLength * skinWidth) / 1000000;
+            
+            // 计算保温棉体积
+            // 保温棉体积立方米=（（A1+2×F）×F×H+B1×F×H）×2
+            // 将毫米转换为米进行计算
+            const A1_m = A1 / 1000;
+            const B1_m = B1 / 1000;
+            const F_m = F / 1000;
+            const H_m = H / 1000;
+            
+            const insulationVolume = ((A1_m + 2 * F_m) * F_m * H_m + B1_m * F_m * H_m) * 2;
+            
+            // 更新蒙皮计算显示
+            document.getElementById('skinLength').textContent = skinLength.toFixed(2) + ' mm';
+            document.getElementById('skinWidth').textContent = skinWidth.toFixed(2) + ' mm';
+            document.getElementById('skinArea').textContent = skinArea.toFixed(4) + ' m²';
+            document.getElementById('insulationVolume').textContent = insulationVolume.toFixed(4) + ' m³';
+
+            // 计算框架重量
+            calculateFrameWeight();
+        }
+
+        function calculateFrameWeight() {
+            const D = parseFloat(frameInputs.plateThickness.value) || 0;
+            const F = parseFloat(frameInputs.height.value) || 0;
+            const A2 = parseFloat(frameInputs.outerDiameterFlange.value) || 0;
+            const A1 = parseFloat(frameInputs.innerDiameterLength.value) || 0;
+            const B1 = parseFloat(frameInputs.innerDiameter.value) || 0;
+            const C = parseFloat(frameInputs.lengthInnerPressure.value) || 0;
+            const C1 = parseFloat(frameInputs.specialLength.value) || 0;
+
+            const inletDensity = parseFloat(document.getElementById('inletMaterial').value) || 7.85;
+            const outletDensity = parseFloat(document.getElementById('outletMaterial').value) || 7.85;
+
+            // 检查必要参数是否存在
+            if (D === 0 || F === 0 || A1 === 0 || B1 === 0 || C === 0) {
+                document.getElementById('inletWeight').textContent = '0.00 kg';
+                document.getElementById('outletWeight').textContent = '0.00 kg';
+                document.getElementById('totalWeight').textContent = '0.00 kg';
+                return;
+            }
+
+            // 公共计算部分
+            const commonLength = (C + F + C1 + (A2 - A1 + 20) / 2) / 1000;
+
+            // 进口侧框架重量计算
+            // (C + F + C1 + (A2 - A1 + 20) ÷ 2) ÷ 1000 × (A1 ÷ 1000) × 密度系数 × D × 2 
+            // + (C + F + C1 + (A2 - A1 + 20) ÷ 2) ÷ 1000 × ((B1 + 2 × F) ÷ 1000) × 密度系数 × D × 2
+            const inletPart1 = commonLength * (A1 / 1000) * inletDensity * D * 2;
+            const inletPart2 = commonLength * ((B1 + 2 * F) / 1000) * inletDensity * D * 2;
+            const inletWeight = inletPart1 + inletPart2;
+
+            // 出口侧框架重量计算
+            // (C + F + C1 + (A2 - A1 + 20) ÷ 2) ÷ 1000 × (A1 ÷ 1000) × 密度系数 × D × 2 
+            // + (C + F + C1 + (A2 - A1 + 20) ÷ 2) ÷ 1000 × ((B1 + 2 × F) ÷ 1000) × 密度系数 × D × 2
+            const outletPart1 = commonLength * (A1 / 1000) * outletDensity * D * 2;
+            const outletPart2 = commonLength * ((B1 + 2 * F) / 1000) * outletDensity * D * 2;
+            const outletWeight = outletPart1 + outletPart2;
+
+            const totalWeight = inletWeight + outletWeight;
+
+            document.getElementById('inletWeight').textContent = inletWeight.toFixed(2) + ' kg';
+            document.getElementById('outletWeight').textContent = outletWeight.toFixed(2) + ' kg';
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2) + ' kg';
+        }
+
+        // 导流板计算器函数
+        function calculateEXD(compensationValue) {
+            const lastDigit = Math.abs(compensationValue) % 10;
+            let exd = 5;
+
+            while ((lastDigit + exd) % 5 !== 0) {
+                exd++;
+            }
+
+            return exd;
+        }
+
+        function resetEXD1() {
+            const EXD1Input = guideInputs.EXD1;
+            const X1 = parseFloat(guideInputs.X1.value);
+
+            if (!isNaN(X1)) {
+                const calculatedEXD1 = calculateEXD(X1);
+                EXD1Input.value = calculatedEXD1;
+                isEXD1AutoCalculated = true;
+                updateDimensionDisplay();
+            } else {
+                EXD1Input.value = '';
+            }
+        }
+
+        function resetEXD2() {
+            const EXD2Input = guideInputs.EXD2;
+            const RD = parseFloat(guideInputs.RD.value);
+
+            if (!isNaN(RD)) {
+                const calculatedEXD2 = calculateEXD(RD);
+                EXD2Input.value = calculatedEXD2;
+                isEXD2AutoCalculated = true;
+                updateDimensionDisplay();
+            } else {
+                EXD2Input.value = '';
+            }
+        }
+
+        function toggleWelding() {
+            const checkbox = guideInputs.enableWelding;
+            const weldingInput = document.getElementById('weldingInput');
+            weldingInput.style.display = checkbox.checked ? 'block' : 'none';
+            updateWeldingDimension();
+        }
+
+        function updateWeldingDimension() {
+            const enableWelding = guideInputs.enableWelding.checked;
+            const weldingDimension = document.getElementById('weldingDimension');
+            const weldingLine = document.getElementById('weldingLine');
+            const weldingVerticalLine = document.getElementById('weldingVerticalLine');
+            const weldingVerticalLineRight = document.getElementById('weldingVerticalLineRight');
+            const weldingArrow = document.getElementById('weldingArrow');
+            const weldingValue = document.getElementById('weldingValue');
+            const weldingLength = parseFloat(guideInputs.weldingLength.value) || 15;
+
+            if (enableWelding) {
+                weldingValue.textContent = weldingLength;
+                weldingDimension.classList.add('show');
+                weldingLine.classList.add('show');
+                weldingVerticalLine.classList.add('show');
+                weldingVerticalLineRight.classList.add('show');
+                weldingArrow.classList.add('show');
+            } else {
+                weldingDimension.classList.remove('show');
+                weldingLine.classList.remove('show');
+                weldingVerticalLine.classList.remove('show');
+                weldingVerticalLineRight.classList.remove('show');
+                weldingArrow.classList.remove('show');
+            }
+        }
+
+        function updateDimensionDisplay() {
+            const RD = parseFloat(guideInputs.RD.value) || 0;
+            const EXD2 = parseFloat(guideInputs.EXD2.value) || 0;
+            const dimensionDisplay = document.getElementById('dimensionDisplay');
+            const dimensionValue = document.getElementById('dimensionValue');
+            const dimensionArrow = document.getElementById('dimensionArrow');
+
+            if (RD > 0 || EXD2 > 0) {
+                const total = RD + EXD2;
+                dimensionValue.textContent = total.toFixed(2);
+                dimensionDisplay.classList.add('show');
+                dimensionArrow.classList.add('show');
+            } else {
+                dimensionDisplay.classList.remove('show');
+                dimensionArrow.classList.remove('show');
+            }
+        }
+
+        function calculateGuide() {
+            const D = parseFloat(guideInputs.D.value);
+            const A1 = parseFloat(guideInputs.A1.value);
+            const B1 = parseFloat(guideInputs.B1.value);
+            const X1 = parseFloat(guideInputs.X1.value);
+            const X2 = parseFloat(guideInputs.X2.value);
+            const RD = parseFloat(guideInputs.RD.value);
+            const H = parseFloat(guideInputs.H.value);
+            const Y = parseFloat(guideInputs.Y.value);
+
+            const errorDiv = document.getElementById('error-message');
+            if (isNaN(D) || isNaN(A1) || isNaN(B1) || isNaN(X1) || isNaN(X2) || isNaN(RD) || isNaN(H) || isNaN(Y)) {
+                errorDiv.innerHTML = '<div class="error">请填写所有基本参数！</div>';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('diagramSection').style.display = 'none';
+                return;
+            }
+
+            errorDiv.innerHTML = '';
+
+            let EXD1 = parseFloat(guideInputs.EXD1.value);
+            let EXD2 = parseFloat(guideInputs.EXD2.value);
+
+            if (isNaN(EXD1)) {
+                EXD1 = calculateEXD(X1);
+                guideInputs.EXD1.value = EXD1;
+                isEXD1AutoCalculated = true;
+            }
+
+            if (isNaN(EXD2)) {
+                EXD2 = calculateEXD(RD);
+                guideInputs.EXD2.value = EXD2;
+                isEXD2AutoCalculated = true;
+            }
+
+            const enableWelding = guideInputs.enableWelding.checked;
+            const weldingLength = enableWelding ? parseFloat(guideInputs.weldingLength.value) || 15 : 15;
+
+            updateWeldingDimension();
+            updateDimensionDisplay();
+
+            // 更新后的公式：
+            // 内衬板A = D × (X1 + EXD1 + X2 + Y + 15) × A1
+            // 内衬板B = D × (X1 + EXD1 + X2 + Y + 15) × (B1 - 2 × D)
+            // 内衬板C = D × (X1 + EXD1 + X2 + Y) × (A1 + (RD + EXD2) × 2)
+            // 内衬板D = D × (X1 + EXD1 + X2 + Y) × (B1 + (RD + EXD2) × 2 + D × 2)
+
+            const calculations = [
+                {
+                    name: '内衬板A',
+                    result: `${D} × ${X1 + EXD1 + X2 + Y + 15} × ${A1}`
+                },
+                {
+                    name: '内衬板B',
+                    result: `${D} × ${X1 + EXD1 + X2 + Y + 15} × ${B1 - 2 * D}`
+                },
+                {
+                    name: '内衬板C',
+                    result: `${D} × ${X1 + EXD1 + X2 + Y} × ${A1 + (RD + EXD2) * 2}`
+                },
+                {
+                    name: '内衬板D',
+                    result: `${D} × ${X1 + EXD1 + X2 + Y} × ${B1 + (RD + EXD2) * 2 + D * 2}`
+                }
+            ];
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = calculations.map(calc => `
+                <div class="result-card">
+                    <h3>${calc.name}</h3>
+                    <div class="result-value">${calc.result}</div>
+                </div>
+            `).join('');
+
+            // 计算内衬板重量
+            calculateLiningWeight();
+
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('diagramSection').style.display = 'block';
+        }
+
+        function calculateLiningWeight() {
+            const D = parseFloat(guideInputs.D.value);
+            const A1 = parseFloat(guideInputs.A1.value);
+            const B1 = parseFloat(guideInputs.B1.value);
+            const X1 = parseFloat(guideInputs.X1.value);
+            const X2 = parseFloat(guideInputs.X2.value);
+            const RD = parseFloat(guideInputs.RD.value);
+            const H = parseFloat(guideInputs.H.value);
+            const Y = parseFloat(guideInputs.Y.value);
+            let EXD1 = parseFloat(guideInputs.EXD1.value);
+            let EXD2 = parseFloat(guideInputs.EXD2.value);
+
+            const enableWelding = guideInputs.enableWelding.checked;
+            const weldingLength = enableWelding ? parseFloat(guideInputs.weldingLength.value) || 15 : 15;
+            const density = parseFloat(document.getElementById('liningMaterial').value) || 7.85;
+
+            // 检查必要参数
+            if (isNaN(D) || isNaN(A1) || isNaN(B1) || isNaN(X1) || isNaN(X2) || isNaN(RD) || isNaN(H) || isNaN(Y)) {
+                document.getElementById('liningAWeight').textContent = '0.00 kg';
+                document.getElementById('liningBWeight').textContent = '0.00 kg';
+                document.getElementById('liningCWeight').textContent = '0.00 kg';
+                document.getElementById('liningDWeight').textContent = '0.00 kg';
+                document.getElementById('liningTotalWeight').textContent = '0.00 kg';
+                return;
+            }
+
+            if (isNaN(EXD1)) EXD1 = calculateEXD(X1);
+            if (isNaN(EXD2)) EXD2 = calculateEXD(RD);
+
+            // 使用新的公式计算重量，每种内衬板有2块
+            // 重量(kg) = (体积(mm³) / 1000000) × 密度系数(g/cm³) × 2
+
+            // 内衬板A：D × (X1 + EXD1 + X2 + Y + 15) × A1 × 密度系数 × 2
+            const volumeA = D * (X1 + EXD1 + X2 + Y + 15) * A1;
+            const weightA = (volumeA / 1000000) * density * 2;
+
+            // 内衬板B：D × (X1 + EXD1 + X2 + Y + 15) × (B1 - 2 × D) × 密度系数 × 2
+            const volumeB = D * (X1 + EXD1 + X2 + Y + 15) * (B1 - 2 * D);
+            const weightB = (volumeB / 1000000) * density * 2;
+
+            // 内衬板C：D × (X1 + EXD1 + X2 + Y) × (A1 + (RD + EXD2) × 2) × 密度系数 × 2
+            const volumeC = D * (X1 + EXD1 + X2 + Y) * (A1 + (RD + EXD2) * 2);
+            const weightC = (volumeC / 1000000) * density * 2;
+
+            // 内衬板D：D × (X1 + EXD1 + X2 + Y) × (B1 + (RD + EXD2) × 2 + D × 2) × 密度系数 × 2
+            const volumeD = D * (X1 + EXD1 + X2 + Y) * (B1 + (RD + EXD2) * 2 + D * 2);
+            const weightD = (volumeD / 1000000) * density * 2;
+
+            const totalWeight = weightA + weightB + weightC + weightD;
+
+            // 显示结果
+            document.getElementById('liningAWeight').textContent = weightA.toFixed(2) + ' kg';
+            document.getElementById('liningBWeight').textContent = weightB.toFixed(2) + ' kg';
+            document.getElementById('liningCWeight').textContent = weightC.toFixed(2) + ' kg';
+            document.getElementById('liningDWeight').textContent = weightD.toFixed(2) + ' kg';
+            document.getElementById('liningTotalWeight').textContent = totalWeight.toFixed(2) + ' kg';
+        }
+
+        function clearInputs() {
+            isManualXChange = false;
+            isManualGuideHChange = false;
+            isManualGuideYChange = false;
+            isManualGuideX1Change = false;
+            isManualGuideX2Change = false;
+            isManualGuideA1Change = false;
+            isManualGuideB1Change = false;
+            Object.values(frameInputs).forEach(input => {
+                if (input) {
+                    if (input.id === 'rValue') {
+                        input.value = 100;
+                    } else if (input.id === 'constantX') {
+                        input.value = 5;
+                    } else if (input.id === 'constantY') {
+                        input.value = 20;
+                    } else {
+                        input.value = '';
+                    }
+                }
+            });
+            // 同时清空右边的相关字段
+            if (guideInputs.H) {
+                guideInputs.H.value = '';
+            }
+            if (guideInputs.Y) {
+                guideInputs.Y.value = '20';
+            }
+            if (guideInputs.X1) {
+                guideInputs.X1.value = '';
+            }
+            if (guideInputs.X2) {
+                guideInputs.X2.value = '';
+            }
+            if (guideInputs.A1) {
+                guideInputs.A1.value = '';
+            }
+            if (guideInputs.B1) {
+                guideInputs.B1.value = '';
+            }
+            calculateFrame();
+        }
+
+        // 事件监听器设置
+        Object.values(frameInputs).forEach(input => {
+            if (input) {
+                input.addEventListener('input', function () {
+                    if (input.id === 'compressionDisplacement') {
+                        if (!isManualXChange) {
+                            calculateConstantX();
+                        }
+                        calculateC1();
+                    }
+                    else if (input.id === 'constantX') {
+                        isManualXChange = true;
+                        calculateC1();
+                    }
+                    else if (['installHeight', 'tensionDisplacement', 'constantY'].includes(input.id)) {
+                        calculateC1();
+                    }
+                    else {
+                        calculateFrame();
+                    }
+                });
+
+                if (input.id === 'compressionDisplacement') {
+                    input.addEventListener('blur', function () {
+                        if (!this.value) {
+                            isManualXChange = false;
+                        }
+                    });
+                }
+
+                if (input.classList.contains('input-field')) {
+                    input.addEventListener('focus', function () {
+                        this.style.transform = 'scale(1.05)';
+                        this.style.transition = 'transform 0.2s ease';
+                    });
+                    input.addEventListener('blur', function () {
+                        this.style.transform = 'scale(1)';
+                    });
+                }
+            }
+        });
+
+        // 导流板事件监听器 - EXD1基于X1计算
+        guideInputs.X1.addEventListener('input', function () {
+            const EXD1Input = guideInputs.EXD1;
+            const X1 = parseFloat(this.value);
+
+            if (!isNaN(X1)) {
+                if (!EXD1Input.value || isEXD1AutoCalculated) {
+                    const calculatedEXD1 = calculateEXD(X1);
+                    EXD1Input.value = calculatedEXD1;
+                    isEXD1AutoCalculated = true;
+                }
+            }
+
+            // 同时处理手动修改状态
+            if (this.value !== '') {
+                isManualGuideX1Change = true;
+            }
+        });
+
+        guideInputs.RD.addEventListener('input', function () {
+            const EXD2Input = guideInputs.EXD2;
+            const RD = parseFloat(this.value);
+
+            if (!isNaN(RD)) {
+                if (!EXD2Input.value || isEXD2AutoCalculated) {
+                    const calculatedEXD2 = calculateEXD(RD);
+                    EXD2Input.value = calculatedEXD2;
+                    isEXD2AutoCalculated = true;
+                }
+                updateDimensionDisplay();
+            }
+        });
+
+        guideInputs.EXD1.addEventListener('input', function () {
+            if (this.value !== '') {
+                isEXD1AutoCalculated = false;
+            }
+        });
+
+        guideInputs.EXD2.addEventListener('input', function () {
+            if (this.value !== '') {
+                isEXD2AutoCalculated = false;
+            }
+            updateDimensionDisplay();
+        });
+
+        guideInputs.weldingLength.addEventListener('input', function () {
+            updateWeldingDimension();
+        });
+
+        // 右边内档高度(H)的事件监听器
+        guideInputs.H.addEventListener('input', function () {
+            if (this.value !== '') {
+                isManualGuideHChange = true;
+            }
+        });
+
+        guideInputs.H.addEventListener('blur', function () {
+            if (!this.value) {
+                isManualGuideHChange = false;
+            }
+        });
+
+        // 右边常量(Y)的事件监听器
+        guideInputs.Y.addEventListener('input', function () {
+            if (this.value !== '') {
+                isManualGuideYChange = true;
+            }
+        });
+
+        guideInputs.Y.addEventListener('blur', function () {
+            if (!this.value) {
+                isManualGuideYChange = false;
+            }
+        });
+
+        // 右边法兰内径长(A1)的事件监听器
+        guideInputs.A1.addEventListener('input', function () {
+            if (this.value !== '') {
+                isManualGuideA1Change = true;
+            }
+        });
+
+        guideInputs.A1.addEventListener('blur', function () {
+            if (!this.value) {
+                isManualGuideA1Change = false;
+            }
+        });
+
+        // 右边法兰内径宽(B1)的事件监听器
+        guideInputs.B1.addEventListener('input', function () {
+            if (this.value !== '') {
+                isManualGuideB1Change = true;
+            }
+        });
+
+        guideInputs.B1.addEventListener('blur', function () {
+            if (!this.value) {
+                isManualGuideB1Change = false;
+            }
+        });
+
+        guideInputs.X1.addEventListener('blur', function () {
+            if (!this.value) {
+                isManualGuideX1Change = false;
+            }
+        });
+
+        // 右边拉伸轴向位移量(X2)的事件监听器
+        guideInputs.X2.addEventListener('input', function () {
+            if (this.value !== '') {
+                isManualGuideX2Change = true;
+            }
+        });
+
+        guideInputs.X2.addEventListener('blur', function () {
+            if (!this.value) {
+                isManualGuideX2Change = false;
+            }
+        });
+
+        // 材料选择事件监听器
+        document.getElementById('inletMaterial').addEventListener('change', function () {
+            calculateFrameWeight();
+        });
+
+        document.getElementById('outletMaterial').addEventListener('change', function () {
+            calculateFrameWeight();
+        });
+
+        // 内衬板材料选择事件监听器
+        document.getElementById('liningMaterial').addEventListener('change', function () {
+            calculateLiningWeight();
+        });
+
+        // 全局函数
+        window.clearInputs = clearInputs;
+        window.resetEXD1 = resetEXD1;
+        window.resetEXD2 = resetEXD2;
+        window.toggleWelding = toggleWelding;
+        window.calculateGuide = calculateGuide;
+        window.showA4Modal = showA4Modal;
+        window.closeA4Modal = closeA4Modal;
+        window.printModal = printModal;
+
+        // 初始计算
+        calculateFrame();
+
+        // A4弹框相关函数
+        function showA4Modal() {
+            updateA4ModalContent();
+            document.getElementById('a4Modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeA4Modal() {
+            document.getElementById('a4Modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function printModal() {
+            updateA4ModalContent();
+            // 确保弹框显示
+            const modal = document.getElementById('a4Modal');
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            
+            // 等待DOM更新后生成PDF
+            setTimeout(() => {
+                generateAndPrintPDF();
+            }, 200);
+        }
+
+        function generateAndPrintPDF() {
+            const modal = document.getElementById('a4Modal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            // 临时显示弹框内容用于PDF生成
+            const originalDisplay = modal.style.display;
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            
+            // PDF配置选项
+            const opt = {
+                margin: [0, 0, 0, 0],
+                filename: '钢结构与导流板计算报告.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+
+            // 生成PDF并自动下载
+            html2pdf().set(opt).from(modalContent).save().then(() => {
+                // PDF生成完成后隐藏弹框
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 1000);
+            }).catch(err => {
+                console.error('PDF生成失败:', err);
+                // 如果PDF生成失败，回退到普通打印
+                window.print();
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 500);
+            });
+        }
+
+        function directPrintModal() {
+            updateA4ModalContent();
+            // 确保弹框显示
+            const modal = document.getElementById('a4Modal');
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            
+            // 等待DOM更新后直接打印
+            setTimeout(() => {
+                window.print();
+                // 打印完成后隐藏弹框
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 500);
+            }, 200);
+        }
+
+        function updateA4ModalContent() {
+            // 更新弹框中的SVG图表显示值
+            const C = parseFloat(document.getElementById('lengthInnerPressure').value) || 0;
+            const F = parseFloat(document.getElementById('height').value) || 0;
+            const C1 = parseFloat(document.getElementById('specialLength').value) || 0;
+            const A1 = parseFloat(document.getElementById('innerDiameterLength').value) || 0;
+            const A2 = parseFloat(document.getElementById('outerDiameterFlange').value) || 0;
+            const B1 = parseFloat(document.getElementById('innerDiameter').value) || 0;
+            const B2 = parseFloat(document.getElementById('widthOuterDiameter').value) || 0;
+            const R = parseFloat(document.getElementById('rValue').value) || 0;
+            const D = parseFloat(document.getElementById('plateThickness').value) || 0;
+            const FLK = ((A2 - A1) + 20) / 2;
+            const L1 = A1 + (F - 100) * 2;
+            const L2 = B1 + (3.14 * R) + (F - 100) * 2;
+            const BCK = C + F + C1 + FLK - ((D - 1) * 2 * 3);
+
+            // 更新弹框中的显示值（如果有对应的元素）
+            const elements = {
+                'c-value-display': C.toFixed(2),
+                'f-value-display': F.toFixed(2),
+                'c1-value-display': C1.toFixed(2),
+                'flk-value-display': FLK.toFixed(2),
+                'l1-value-display': L1.toFixed(2),
+                'l2-value-display': L2.toFixed(2),
+                'bck1-value-display': BCK.toFixed(2),
+                'bck2-value-display': BCK.toFixed(2),
+                'r-value-display': R.toFixed(2) + 'mm'
+            };
+
+            // 尝试更新弹框中的元素（如果存在）
+            Object.keys(elements).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = elements[id];
+                }
+            });
+        }
+
+        // 绑定按钮事件
+        document.getElementById('showA4Modal').addEventListener('click', showA4Modal);
+        document.getElementById('printModal').addEventListener('click', printModal);
+        document.getElementById('directPrint').addEventListener('click', directPrintModal);
+
+        // 点击弹框外部关闭
+        document.getElementById('a4Modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeA4Modal();
+            }
+        });
+
+        // ESC键关闭弹框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeA4Modal();
+            }
+        });
+
+        function updateDiagramValueDisplays() {
+            console.log('updateDiagramValueDisplays called'); // 调试信息
+            const C = parseFloat(document.getElementById('lengthInnerPressure').value) || 0;
+            const F = parseFloat(document.getElementById('height').value) || 0;
+            const C1 = parseFloat(document.getElementById('specialLength').value) || 0;
+            const A1 = parseFloat(document.getElementById('innerDiameterLength').value) || 0;
+            const A2 = parseFloat(document.getElementById('outerDiameterFlange').value) || 0;
+            const B1 = parseFloat(document.getElementById('innerDiameter').value) || 0;
+            const B2 = parseFloat(document.getElementById('widthOuterDiameter').value) || 0;
+            const R = parseFloat(document.getElementById('rValue').value) || 0;
+            const D = parseFloat(document.getElementById('plateThickness').value) || 0;
+            const FLK = ((A2 - A1) + 20) / 2;
+            const L1 = A1 + (F - 100) * 2;
+            const L2 = B1 + (3.14 * R) + (F - 100) * 2;
+            const BCK = C + F + C1 + FLK - ((D - 1) * 2 * 3);
+
+            console.log('Values:', { C, F, C1, FLK, L1, L2, BCK, R }); // 调试信息
+
+            // 更新显示值
+            const elements = {
+                'c-value-display': C.toFixed(2),
+                'f-value-display': F.toFixed(2),
+                'c1-value-display': C1.toFixed(2),
+                'flk-value-display': FLK.toFixed(2),
+                'l1-value-display': L1.toFixed(2),
+                'l2-value-display': L2.toFixed(2),
+                'bck1-value-display': BCK.toFixed(2),
+                'bck2-value-display': BCK.toFixed(2),
+                'r-value-display': R.toFixed(2) + 'mm'
+            };
+
+            Object.keys(elements).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = elements[id];
+                    console.log(`Updated ${id}: ${elements[id]}`); // 调试信息
+                } else {
+                    console.log(`Element ${id} not found`); // 调试信息
+                }
+            });
+        }
+
+        // 确保DOM加载完成后绑定事件
+        function bindDiagramEvents() {
+            const inputIds = [
+                'lengthInnerPressure', 'height', 'specialLength', 'outerDiameterFlange', 'innerDiameterLength',
+                'innerDiameter', 'widthOuterDiameter', 'rValue', 'plateThickness'
+            ];
+
+            inputIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updateDiagramValueDisplays);
+                    console.log(`Event bound to ${id}`); // 调试信息
+                } else {
+                    console.log(`Input element ${id} not found`); // 调试信息
+                }
+            });
+        }
+
+        // 页面加载完成后执行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () {
+                bindDiagramEvents();
+                updateDiagramValueDisplays();
+            });
+        } else {
+            bindDiagramEvents();
+            updateDiagramValueDisplays();
+        }
+    </script>
+</body>
+
+</html>
